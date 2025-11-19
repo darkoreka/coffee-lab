@@ -20,13 +20,7 @@ export function OurStory() {
 
                 <div className="relative flex-1 max-w-[700px] mx-auto space-y-4 text-center text-[#f7e8d0] md:text-left">
                     <h2
-                        className="absolute
-              -top-30
-              md:-top-27                     /* mindig picit kilóg a konténerből */
-              right-4          /* távolság a konténer szélétől */
-              text-3xl md:text-5xl
-              text-[#f4d6a5]
-              drop-shadow-lg"
+                        className="absolute -top-30 md:-top-27 right-4 text-3xl md:text-5xl text-[#f4d6a5] drop-shadow-lg"
                         style={{ fontFamily: '"Dancing Script", cursive' }}
                     >
                         Our Story
@@ -37,12 +31,6 @@ export function OurStory() {
                         is curated to highlight the subtle notes and aromas discovered on our travels. For coffee lovers
                         searching for unique brewing rituals, we also craft bespoke equipment paired with expert guides.
                     </p>
-
-                    {/* <div className="flex items-center justify-center gap-3 pt-4 md:justify-start">
-                        <span className="size-3 rounded-full bg-[#d0a26b]" />
-                        <span className="size-3 rounded-full bg-white/30" />
-                        <span className="size-3 rounded-full bg-white/25" />
-                    </div> */}
                 </div>
             </div>
         </section>
