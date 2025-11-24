@@ -1,5 +1,6 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import heroBg from "@/assets/Bg customer.png";
+import { WriteReview } from "./write-review";
 
 type Review = {
     id: string;
@@ -10,41 +11,60 @@ type Review = {
     quote: string;
 };
 
+export type ProductReview = {
+    id?: string;
+    text?: string;
+    rating?: number;
+    review?: string;
+    comment?: string;
+    stars?: number;
+    createdAt?: string;
+};
+
+export type Product = {
+    id: string;
+    name?: string;
+    description?: string;
+    image?: string;
+    reviews?: ProductReview[];
+};
+
 const REVIEWS_API = "https://rw-api-production.up.railway.app/reviews";
+const PRODUCTS_API = "http://localhost:8055/products";
 
 const MOCK_REVIEWS: Review[] = [
     {
-        id: "tyler",
-        name: "Tyler Stuckel",
-        title: "Traveler & Writer",
-        avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80",
+        id: "pour-over-kit-mock",
+        name: "Copper Pour Over Kit",
+        title: "Handcrafted copper dripper",
+        avatar: "https://picsum.photos/seed/pour/300/300",
         rating: 5,
-        quote: "I love spending my downtime at a cozy coffee shop, surrounded by the warm aroma of freshly brewed blends and pastries.",
+        quote: "Looks stunning on my counter and brews clean cups.",
     },
     {
-        id: "fin",
-        name: "Finlay Wild",
-        title: "Product Designer",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
-        rating: 4,
-        quote: "The espresso here is smooth and bold, and the staff remembers my order. It's an easy place to unwind and get inspired.",
-    },
-    {
-        id: "maya",
-        name: "Maya Griffith",
-        title: "Food Blogger",
-        avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80",
+        id: "espresso-scale-mock",
+        name: "Nano Espresso Scale",
+        title: "Rechargeable espresso scale",
+        avatar: "https://picsum.photos/seed/scale/300/300",
         rating: 5,
-        quote: "A perfect mix of ambience and flavor. The latte art is gorgeous, and the playlists set the mood for slow mornings.",
+        quote: "Helps me dial in consistently every morning.",
     },
     {
-        id: "sam",
-        name: "Samir Patel",
-        title: "Software Engineer",
-        avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=300&q=80",
+        id: "cold-brew-bottle-mock",
+        name: "Glass Cold Brew Bottle",
+        title: "1L heat-tempered glass",
+        avatar: "https://picsum.photos/seed/coldbrew/300/300",
         rating: 4,
-        quote: "Their cold brew fuels my late-night sprints. Cozy corners, fast Wi-Fi, and genuinely friendly baristas.",
+        quote: "Makes enough concentrate for the week, super easy cleanup.",
     },
+    {
+        id: "walnut-tamper-mock",
+        name: "Walnut Handle Tamper",
+        title: "58.5mm stainless base",
+        avatar: "https://picsum.photos/seed/tamper/300/300",
+        rating: 5,
+        quote: "Weight feels balanced and fits my VST baskets perfectly.",
+    }
 ];
 
 const clampRating = (value: number) => Math.min(5, Math.max(1, Math.round(value || 0)));
@@ -56,8 +76,56 @@ const renderStars = (rating: number) =>
         </span>
     ));
 
+const toProductsArray = (payload: unknown): Product[] => {
+    if (Array.isArray(payload)) return payload as Product[];
+    if (payload && typeof payload === "object" && Array.isArray((payload as any).products)) {
+        return (payload as any).products as Product[];
+    }
+    return [];
+};
+
+const normalizeProductReviews = (products: Product[]): Review[] =>
+    products.flatMap((product, productIndex) => {
+        const reviews = Array.isArray(product?.reviews) ? product.reviews : [];
+        const fallbackAvatar = MOCK_REVIEWS[productIndex % MOCK_REVIEWS.length].avatar;
+        const title = product?.description || "Coffee Gear";
+        const name = product?.name || "Coffee Product";
+
+        return reviews.map((item, reviewIndex) => {
+            const text =
+                (typeof item?.text === "string" && item.text.trim()) ||
+                (typeof item?.review === "string" && item.review.trim()) ||
+                (typeof item?.comment === "string" && item.comment.trim()) ||
+                "Great coffee!";
+
+            return {
+                id: String(item?.id ?? `${product.id ?? "product"}-review-${reviewIndex}`),
+                name,
+                title,
+                avatar: fallbackAvatar,
+                rating: clampRating(item?.rating ?? item?.stars ?? 5),
+                quote: text,
+            };
+        });
+    });
+
+const normalizeLegacyReviews = (payload: unknown): Review[] => {
+    if (!Array.isArray(payload)) return [];
+
+    return payload.map((item: any, index: number) => ({
+        id: String(item?.id ?? item?._id ?? `api-${index}`),
+        name: item?.name ?? item?.fullName ?? "Guest",
+        title: item?.title ?? item?.role ?? item?.job ?? "Coffee Lover",
+        avatar: item?.avatar ?? item?.photo ?? MOCK_REVIEWS[index % MOCK_REVIEWS.length].avatar,
+        rating: clampRating(item?.rating ?? item?.stars ?? 5),
+        quote: item?.review ?? item?.feedback ?? item?.comment ?? item?.body ?? "Great coffee!",
+    }));
+};
+
 export function Review() {
     const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProductId, setSelectedProductId] = useState("");
     const [current, setCurrent] = useState(0);
     const [isTabletDown, setIsTabletDown] = useState(false);
 
@@ -67,31 +135,56 @@ export function Review() {
     useEffect(() => {
         const controller = new AbortController();
 
-        const loadReviews = async () => {
+        const hydrateFromProducts = async () => {
             try {
-                const response = await fetch(REVIEWS_API, { signal: controller.signal });
-                if (!response.ok) return;
+                const response = await fetch(PRODUCTS_API, { signal: controller.signal });
+                if (!response.ok) return false;
+
                 const payload = await response.json();
-                if (!Array.isArray(payload)) return;
+                const productList = toProductsArray(payload);
+                if (!productList.length) return false;
 
-                const normalized: Review[] = payload.map((item: any, index: number) => ({
-                    id: String(item?.id ?? item?._id ?? `api-${index}`),
-                    name: item?.name ?? item?.fullName ?? "Guest",
-                    title: item?.title ?? item?.role ?? item?.job ?? "Coffee Lover",
-                    avatar: item?.avatar ?? item?.photo ?? MOCK_REVIEWS[index % MOCK_REVIEWS.length].avatar,
-                    rating: clampRating(item?.rating ?? item?.stars ?? 5),
-                    quote: item?.review ?? item?.feedback ?? item?.comment ?? item?.body ?? "Great coffee!",
-                }));
+                setProducts(productList);
+                setSelectedProductId((prev) => prev || productList[0]?.id || "");
 
+                const normalized = normalizeProductReviews(productList);
                 if (normalized.length) {
                     setReviews(normalized);
                     setCurrent(0);
                 }
+
+                return true;
+            } catch (error) {
+                if (import.meta.env.DEV) {
+                    // eslint-disable-next-line no-console
+                    console.error("Failed to load product reviews", error);
+                }
+                return false;
+            }
+        };
+
+        const hydrateFromLegacyReviews = async () => {
+            try {
+                const response = await fetch(REVIEWS_API, { signal: controller.signal });
+                if (!response.ok) return;
+                const payload = await response.json();
+                const normalized = normalizeLegacyReviews(payload);
+                if (!normalized.length) return;
+
+                setReviews(normalized);
+                setCurrent(0);
             } catch (error) {
                 if (import.meta.env.DEV) {
                     // eslint-disable-next-line no-console
                     console.error("Failed to load reviews", error);
                 }
+            }
+        };
+
+        const loadReviews = async () => {
+            const hydrated = await hydrateFromProducts();
+            if (!hydrated) {
+                await hydrateFromLegacyReviews();
             }
         };
 
@@ -128,6 +221,27 @@ export function Review() {
 
     const goPrevious = () => setCurrent((prev) => getWrappedIndex(prev - 1));
     const goNext = () => setCurrent((prev) => getWrappedIndex(prev + 1));
+
+    const handleReviewAdded = (updatedProduct?: Product) => {
+        setProducts((prev) => {
+            const nextProducts = (() => {
+                if (!updatedProduct) return prev;
+                const existingIndex = prev.findIndex((item) => item.id === updatedProduct.id);
+                if (existingIndex === -1) return [...prev, updatedProduct];
+                const clone = [...prev];
+                clone[existingIndex] = { ...prev[existingIndex], ...updatedProduct };
+                return clone;
+            })();
+
+            const normalized = normalizeProductReviews(nextProducts);
+            if (normalized.length) {
+                setReviews(normalized);
+                setCurrent(0);
+            }
+
+            return nextProducts;
+        });
+    };
 
     return (
         <section id="reviews" className="relative px-4 py-20">
@@ -255,6 +369,13 @@ export function Review() {
                     </div>
                 </div>
             </div>
+
+            <WriteReview
+                products={products}
+                selectedProductId={selectedProductId}
+                onSelectProduct={setSelectedProductId}
+                onReviewAdded={handleReviewAdded}
+            />
         </section>
     );
 }
