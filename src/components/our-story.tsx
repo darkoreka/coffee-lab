@@ -4,7 +4,7 @@ export function OurStory() {
     return (
         <section id="story" className="px-4 mb-10 overflow-visible">
             <div className="relative mx-auto flex w-full max-w-[1440px] max-h-[300px] flex-col gap-10 rounded-[56px] 
-                      bg-gradient-to-r from-[#2a0f0c] via-[#3c1c14] to-[#4a271a] 
+                      bg-linear-to-r from-[#2a0f0c] via-[#3c1c14] to-[#4a271a] 
                       px-6 py-10 shadow-[0_25px_80px_rgba(0,0,0,0.55)] 
                       md:flex-row md:items-center md:px-10 md:py-14 overflow-visible">
 
@@ -20,7 +20,7 @@ export function OurStory() {
 
                 <div className="relative flex-1 max-w-[700px] mx-auto space-y-4 text-center text-[#f7e8d0] md:text-left">
                     <h2
-                        className="absolute -top-30 md:-top-27 right-4 text-3xl md:text-5xl text-[#f4d6a5] drop-shadow-lg"
+                        className="absolute -top-30 md:-top-27 sm:-top-17 right-4 text-3xl md:text-5xl text-[#f4d6a5] drop-shadow-lg"
                         style={{ fontFamily: '"Dancing Script", cursive' }}
                     >
                         Our Story
