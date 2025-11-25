@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import heroBg from "@/assets/Bg customer.png";
-import { WriteReview } from "./write-review";
 
 type Review = {
     id: string;
@@ -124,8 +123,6 @@ const normalizeLegacyReviews = (payload: unknown): Review[] => {
 
 export function Review() {
     const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
-    const [products, setProducts] = useState<Product[]>([]);
-    const [selectedProductId, setSelectedProductId] = useState("");
     const [current, setCurrent] = useState(0);
     const [isTabletDown, setIsTabletDown] = useState(false);
 
@@ -143,9 +140,6 @@ export function Review() {
                 const payload = await response.json();
                 const productList = toProductsArray(payload);
                 if (!productList.length) return false;
-
-                setProducts(productList);
-                setSelectedProductId((prev) => prev || productList[0]?.id || "");
 
                 const normalized = normalizeProductReviews(productList);
                 if (normalized.length) {
@@ -221,27 +215,6 @@ export function Review() {
 
     const goPrevious = () => setCurrent((prev) => getWrappedIndex(prev - 1));
     const goNext = () => setCurrent((prev) => getWrappedIndex(prev + 1));
-
-    const handleReviewAdded = (updatedProduct?: Product) => {
-        setProducts((prev) => {
-            const nextProducts = (() => {
-                if (!updatedProduct) return prev;
-                const existingIndex = prev.findIndex((item) => item.id === updatedProduct.id);
-                if (existingIndex === -1) return [...prev, updatedProduct];
-                const clone = [...prev];
-                clone[existingIndex] = { ...prev[existingIndex], ...updatedProduct };
-                return clone;
-            })();
-
-            const normalized = normalizeProductReviews(nextProducts);
-            if (normalized.length) {
-                setReviews(normalized);
-                setCurrent(0);
-            }
-
-            return nextProducts;
-        });
-    };
 
     return (
         <section id="reviews" className="relative px-4 py-20">
@@ -369,13 +342,6 @@ export function Review() {
                     </div>
                 </div>
             </div>
-
-            <WriteReview
-                products={products}
-                selectedProductId={selectedProductId}
-                onSelectProduct={setSelectedProductId}
-                onReviewAdded={handleReviewAdded}
-            />
         </section>
     );
 }

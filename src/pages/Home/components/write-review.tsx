@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useState } from "react";
 import "font-awesome/css/font-awesome.min.css";
-import type { Product } from "./review";
+import type { Product } from "../../Reviews/components/review";
 
 const PRODUCTS_API = "http://localhost:8055/products";
 

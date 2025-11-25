@@ -1,28 +1,11 @@
-import type { ReactNode } from 'react'
 import footerImage from '@/assets/Footer Img.png'
 import footerBg from '@/assets/Bg footer.png'
-import { Instagram, Linkedin, Mail, MapPin, Phone } from 'lucide-react'
-
-function SocialIcon({
-    label,
-    children,
-    href = '#',
-}: { label: string; children: ReactNode; href?: string }) {
-    return (
-        <a
-            aria-label={label}
-            href={href}
-            className="flex h-10 w-10 items-center justify-center rounded bg-white text-[#1a0b0d] shadow-[0_8px_20px_rgba(0,0,0,0.25)] transition hover:bg-[#e6d2be]"
-        >
-            {children}
-        </a>
-    )
-}
+import { Mail, MapPin, Phone } from 'lucide-react'
 
 export function Footer() {
     return (
-        <footer className="mt-20 w-full text-[#f3e2d1]">
-            <div className="relative mx-auto min-h-[55vh] overflow-visible bg-[#c3a38767] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <footer className=" w-full text-[#f3e2d1]">
+            <section id="footer" className="relative mx-auto min-h-[40vh] overflow-visible bg-[#c3a38767] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                 <div className="absolute inset-0">
                     <img
                         src={footerBg}
@@ -119,7 +102,7 @@ export function Footer() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </footer>
     )
 }
