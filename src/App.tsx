@@ -1,19 +1,11 @@
 import './App.css'
-import { Header } from './components/header'
-import Hero from './components/hero'
-import { OurStory } from './components/our-story'
-import { Services } from './components/services'
-import { Review } from './components/review'
+import Home from './pages/Home/Home'
 
 function App() {
 
   return (
     <>
-      <Header />
-      <Hero />
-      <OurStory />
-      <Services />
-      <Review />
+      <Home />
     </>
   )
 }

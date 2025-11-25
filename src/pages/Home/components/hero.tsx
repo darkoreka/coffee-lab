@@ -1,7 +1,7 @@
 import heroBg from '@/assets/Hero Img .png'
 import heroBeans from '@/assets/Coffees.png'
 import heroCard from '@/assets/card.png'
-import { Button } from './ui/button'
+import { Button } from '../../../components/ui/button'
 
 export default function Hero() {
     return (

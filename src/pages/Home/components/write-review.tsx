@@ -181,8 +181,8 @@ export function WriteReview({ products, selectedProductId, onSelectProduct, onRe
                 {statusMessage ? (
                     <div
                         className={`rounded-2xl px-4 py-3 text-sm ${statusMessage.type === "success"
-                                ? "bg-[#1c2a17] text-[#d1f2a5] border border-[#d1f2a5]/30"
-                                : "bg-[#2a1413] text-[#ffc9c9] border border-[#ffc9c9]/20"
+                            ? "bg-[#1c2a17] text-[#d1f2a5] border border-[#d1f2a5]/30"
+                            : "bg-[#2a1413] text-[#ffc9c9] border border-[#ffc9c9]/20"
                             }`}
                     >
                         {statusMessage.text}
